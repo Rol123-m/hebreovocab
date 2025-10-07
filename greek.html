@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>שָׁלוֹם - Tarjetas de Vocabulario Hebreo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Frank+Ruehl+Libre:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Frank Ruehl Libre', serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: white;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .progress-summary {
+            background: rgba(255,255,255,0.1);
+            padding: 15px 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .toggle-icon {
+            font-size: 1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-icon.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .progress-details {
+            margin-top: 15px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .progress-details.collapsed {
+            max-height: 0;
+            margin-top: 0;
+            opacity: 0;
+        }
+
+        .difficulty-stat {
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .difficulty-stat .number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+
+        .difficulty-stat.easy .number { color: #2ecc71; }
+        .difficulty-stat.medium .number { color: #f39c12; }
+        .difficulty-stat.hard .number { color: #e74c3c; }
+
+        .lesson-selector {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .lesson-checkboxes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .lesson-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.1);
+            padding: 12px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .lesson-item:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .lesson-item.review-mode {
+            background: rgba(255,193,7,0.2);
+            border: 2px solid rgba(255,193,7,0.5);
+        }
+
+        .lesson-item input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .lesson-item label {
+            cursor: pointer;
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .options {
+            margin: 20px 0;
+        }
+
+        .mix-option {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.1);
+            padding: 10px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mix-option:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .start-button {
+            background: #2ecc71;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .start-button:hover:not(:disabled) {
+            background: #27ae60;
+            transform: translateY(-2px);
+        }
+
+        .start-button:disabled {
+            background: #7f8c8d;
+            cursor: not-allowed;
+        }
+
+        .study-area {
+            width: 100%;
+            max-width: 600px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .study-area.show {
+            display: flex;
+        }
+
+        .lesson-info {
+            background: rgba(255,255,255,0.1);
+            padding: 10px 20px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        .flashcard-container {
+            position: relative;
+            width: 300px;
+            height: 400px;
+            perspective: 1000px;
+            margin-bottom: 30px;
+        }
+
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s ease;
+            cursor: pointer;
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            overflow: hidden;
+            background: white;
+            display: grid;
+        }
+
+        .card-front {
+            grid-template-rows: 320px 80px;
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            grid-template-rows: 200px 60px 140px;
+        }
+
+        .audio-button {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(52, 152, 219, 0.9);
+            border: none;
+            color: white;
+            padding: 8px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1rem;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            border: 2px solid white;
+            transition: all 0.3s ease;
+        }
+
+        .audio-button:hover {
+            background: rgba(41, 128, 185, 1);
+            transform: scale(1.1);
+        }
+
+        .difficulty-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            z-index: 10;
+            border: 2px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            display: none;
+        }
+
+        .difficulty-indicator.easy { background: #2ecc71; }
+        .difficulty-indicator.medium { background: #f39c12; }
+        .difficulty-indicator.hard { background: #e74c3c; }
+        .difficulty-indicator.show { display: block; }
+
+        .image-section {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #f8f9fa;
+            position: relative;
+        }
+
+        .card-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .image-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #f0f0f0, #e0e0e0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: #666;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .text-section {
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            border-top: 2px solid #eee;
+        }
+
+        .hebrew-text {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2c3e50;
+            direction: rtl;
+            text-align: center;
+        }
+
+        .spanish-text {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #e74c3c;
+            text-align: center;
+        }
+
+        .difficulty-section {
+            background: #f8f9fa;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .difficulty-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .difficulty-btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            min-width: 65px;
+        }
+
+        .difficulty-btn:hover { transform: scale(1.05); }
+        .difficulty-btn.easy { background: #2ecc71; color: white; }
+        .difficulty-btn.medium { background: #f39c12; color: white; }
+        .difficulty-btn.hard { background: #e74c3c; color: white; }
+        
+        .difficulty-btn.selected {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .nav-btn {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .progress {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 1rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .instructions {
+            text-align: center;
+            margin-top: 20px;
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        .stats {
+            background: rgba(255,255,255,0.1);
+            padding: 15px 20px;
+            border-radius: 20px;
+            margin-top: 20px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        .back-button {
+            background: #9b59b6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .back-button:hover {
+            background: #8e44ad;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .lesson-checkboxes {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .flashcard-container {
+                width: 280px;
+                height: 373px;
+            }
+            
+            .card-front {
+                grid-template-rows: 298px 75px;
+            }
+
+            .card-back {
+                grid-template-rows: 180px 55px 138px;
+            }
+            
+            .hebrew-text, .spanish-text {
+                font-size: 1.8rem;
+            }
+
+            .lesson-checkboxes {
+                grid-template-columns: 1fr;
+            }
+
+            .difficulty-btn {
+                padding: 8px 12px;
+                font-size: 0.8rem;
+                min-width: 55px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>שָׁלוֹם</h1>
+            <p>Aprendamos vocabulario hebreo</p>
+        </div>
+
+        <div class="progress-summary" id="progressSummary">
+            <div class="progress-header" onclick="toggleProgress()">
+                <h3>Tu Progreso: <span id="totalStudied">0</span>/72 palabras</h3>
+                <span class="toggle-icon" id="toggleIcon">▼</span>
+            </div>
+            <div class="progress-details" id="progressDetails">
+                <div class="difficulty-stat easy">
+                    <div class="number" id="easyCount">0</div>
+                    <div class="label">Fácil</div>
+                </div>
+                <div class="difficulty-stat medium">
+                    <div class="number" id="mediumCount">0</div>
+                    <div class="label">Medio</div>
+                </div>
+                <div class="difficulty-stat hard">
+                    <div class="number" id="hardCount">0</div>
+                    <div class="label">Difícil</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="lesson-selector" id="lessonSelector">
+            <h3>Selecciona las lecciones para estudiar:</h3>
+            <div class="lesson-checkboxes">
+                <div class="lesson-item">
+                    <input type="checkbox" id="lesson3" checked>
+                    <label for="lesson3">Lección 3 (9 palabras)</label>
+                </div>
+                <div class="lesson-item">
+                    <input type="checkbox" id="lesson4">
+                    <label for="lesson4">Lección 4 (9 palabras)</label>
+                </div>
+                <div class="lesson-item">
+                    <input type="checkbox" id="lesson5">
+                    <label for="lesson5">Lección 5 (9 palabras)</label>
+                </div>
+                <div class="lesson-item">
+                    <input type="checkbox" id="lesson6">
+                    <label for="lesson6">Lección 6 (9 palabras)</label>
+                </div>
+                <div class="lesson-item">
+                    <input type="checkbox" id="lesson7">
+                    <label for="lesson7">Lección 7 (9 palabras)</label>
+                </div>
+                <div class="lesson-item">
+                    <input type="checkbox" id="lesson8">
+                    <label for="lesson8">Lección 8 (9 palabras)</label>
+                </div>
+                <div class="lesson-item">
+                    <input type="checkbox" id="lesson9">
+                    <label for="lesson9">Lección 9 (9 palabras)</label>
+                </div>
+                <div class="lesson-item">
+                    <input type="checkbox" id="lesson10">
+                    <label for="lesson10">Lección 10 (8 palabras)</label>
+                </div>
+                <div class="lesson-item review-mode">
+                    <input type="checkbox" id="reviewMode">
+                    <label for="reviewMode">🔄 Modo Repaso</label>
+                </div>
+            </div>
+            <div class="options">
+                <div class="mix-option">
+                    <input type="checkbox" id="mixCards">
+                    <label for="mixCards">Mezclar tarjetas</label>
+                </div>
+            </div>
+            <button class="start-button" id="startButton">Comenzar estudio</button>
+        </div>
+
+        <div class="study-area" id="studyArea">
+            <div class="lesson-info">
+                <strong>Estudiando:</strong> <span id="lessonDisplay">Lección 3</span>
+            </div>
+
+            <div class="flashcard-container">
+                <div class="flashcard" id="flashcard">
+                    <button class="audio-button" id="audioButton" title="Reproducir pronunciación">🔊</button>
+                    <div class="difficulty-indicator" id="difficultyIndicator"></div>
+                    
+                    <div class="card-face card-front">
+                        <div class="image-section">
+                            <img class="card-image" id="frontImage" alt="Imagen" style="display: none;">
+                            <div class="image-placeholder" id="frontPlaceholder">Imagen</div>
+                        </div>
+                        <div class="text-section">
+                            <div class="hebrew-text" id="hebrewText">שֵׁם</div>
+                        </div>
+                    </div>
+
+                    <div class="card-face card-back">
+                        <div class="image-section">
+                            <img class="card-image" id="backImage" alt="Imagen" style="display: none;">
+                            <div class="image-placeholder" id="backPlaceholder">Imagen</div>
+                        </div>
+                        <div class="text-section">
+                            <div class="spanish-text" id="spanishText">nombre</div>
+                        </div>
+                        <div class="difficulty-section">
+                            <div class="difficulty-buttons">
+                                <button class="difficulty-btn easy" data-difficulty="easy">Fácil</button>
+                                <button class="difficulty-btn medium" data-difficulty="medium">Medio</button>
+                                <button class="difficulty-btn hard" data-difficulty="hard">Difícil</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="nav-btn" id="prevButton">← Anterior</button>
+                <div class="progress" id="progressDisplay">1 / 9</div>
+                <button class="nav-btn" id="nextButton">Siguiente →</button>
+            </div>
+
+            <div class="instructions">
+                <p>Espacio = voltear | ← → = navegar | A = audio</p>
+            </div>
+
+            <div class="stats">
+                <small>Estudiadas: <span id="studiedCount">0</span> / <span id="totalCount">9</span></small>
+                <div id="reviewStats" style="display: none; margin-top: 5px;">
+                    <small>
+                        <span style="color: #f39c12;">●</span> Medias: <span id="reviewMediumCount">0</span> | 
+                        <span style="color: #e74c3c;">●</span> Difíciles: <span id="reviewHardCount">0</span>
+                    </small>
+                </div>
+                <button class="back-button" id="backButton">Cambiar lecciones</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const vocabulary = {
+            lesson3: [
+                { hebrew: "שֵׁם", spanish: "nombre", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/shem.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/shem.mp3" },
+                { hebrew: "אָב", spanish: "padre", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/ab.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/ab.mp3" },
+                { hebrew: "טוֹב", spanish: "bueno", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/tov.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/tov.mp3" },
+                { hebrew: "סוּס", spanish: "caballo", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/sus.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/sus.mp3" },
+                { hebrew: "הַר", spanish: "montaña", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/har.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/har.mp3" },
+                { hebrew: "לֵב", spanish: "corazón", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/leb.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/leb.mp3" },
+                { hebrew: "בֵּן", spanish: "hijo", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/ben.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/ben.mp3" },
+                { hebrew: "זֶה", spanish: "éste", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/zeh.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/zeh.mp3" },
+                { hebrew: "גַּן", spanish: "jardín", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/gan.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/gan.mp3" }
+            ],
+            lesson4: [
+                { hebrew: "בַּיִת", spanish: "casa", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/bayit.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/bayit.mp3" },
+                { hebrew: "נָתַן", spanish: "él dio", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/natan.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/natan.mp3" },
+                { hebrew: "חֶרֶב", spanish: "espada", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/hereb.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/hereb.mp3" },
+                { hebrew: "לְ/לַ/לָ", spanish: "a/para", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/la.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson7/le-la-la.mp3" },
+                { hebrew: "אָדָם", spanish: "hombre", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/adam.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/adam.mp3" },
+                { hebrew: "עִיר", spanish: "ciudad", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/ir.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/ir.mp3" },
+                { hebrew: "אֵם", spanish: "madre", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/em.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/em.mp3" },
+                { hebrew: "טוֹבָה", spanish: "buena", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/tobah.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/tobah.mp3" },
+                { hebrew: "בַּת", spanish: "hija", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/bat.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/bat.mp3" }
+            ],
+            lesson5: [
+                { hebrew: "הֵיכָל", spanish: "templo", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/hekal.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/hekal.mp3" },
+                { hebrew: "שְׁמַע", spanish: "escucha", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/shema.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/shema.mp3" },
+                { hebrew: "אָחוֹת", spanish: "hermana", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/ahot.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/ahot.mp3" },
+                { hebrew: "מֶלֶךְ", spanish: "rey", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/melek.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/melek.mp3" },
+                { hebrew: "אָח", spanish: "hermano", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/ah.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/ah.mp3" },
+                { hebrew: "בְּרִית", spanish: "pacto", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/berit.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/berit.mp3" },
+                { hebrew: "יִשְׂרָאֵל", spanish: "Israel", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/yisrael.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/yisrael.mp3" },
+                { hebrew: "עַם", spanish: "pueblo", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/am.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/am.mp3" },
+                { hebrew: "תּוֹרָה", spanish: "ley", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/torah.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/torah.mp3" }
+            ],
+            lesson6: [
+                { hebrew: "רֹאש", spanish: "cabeza", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/rosh.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/rosh.mp3" },
+                { hebrew: "הוּא", spanish: "él", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/hu.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/hu.mp3" },
+                { hebrew: "מִי", spanish: "¿quién?", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/mi.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/mi.mp3" },
+                { hebrew: "שָׁנָה", spanish: "año", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/shanah.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/shanah.mp3" },
+                { hebrew: "בָּא", spanish: "él vino", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/bo.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/bo.mp3" },
+                { hebrew: "זֹאת", spanish: "ésta", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/zot.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/zot.mp3" },
+                { hebrew: "אִישׁ", spanish: "hombre", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/ish.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/ish.mp3" },
+                { hebrew: "קוֹל", spanish: "voz", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/qol.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/qol.mp3" },
+                { hebrew: "שְׁמוּאֵל", spanish: "Samuel", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/shamuel.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolessons3-6/shamuel.mp3" }
+            ],
+            lesson7: [
+                { hebrew: "הַ/הָ/הֶ", spanish: "el/la (prefijo)", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/he-ha-ha.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson7/he-ha-ha.mp3" },
+                { hebrew: "לְ/לַ/לָ", spanish: "a/para el/la (prefijo)", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/le-la-la.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson7/le-la-la.mp3" },
+                { hebrew: "בְּ/בַ/בָּ", spanish: "en el/la (prefijo)", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/be-ba-ba.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson7/be-ba-ba.mp3" },
+                { hebrew: "אֶל־", spanish: "a, hacia", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/el.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson7/el.mp3" },
+                { hebrew: "מִן־", spanish: "de, desde", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/min.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson7/min.mp3" },
+                { hebrew: "הָלַךְ", spanish: "él caminó, fue", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/halak.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson7/halak.mp3" },
+                { hebrew: "אִשָּׁה", spanish: "mujer, esposa", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/isha.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson7/isha.mp3" },
+                { hebrew: "דָּבָר", spanish: "palabra, cosa", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/davar.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson7/davar.mp3" },
+                { hebrew: "דְּבַר", spanish: "la palabra de", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/debar.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson7/debar.mp3" }
+            ],
+            lesson8: [
+                { hebrew: "מַיִם", spanish: "agua (pl.)", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/mayim.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson8-10/mayim.mp3" },
+                { hebrew: "כָּל-/כֹּל", spanish: "todo/a, todos/as, cada", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/kol.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson8-10/kol.mp3" },
+                { hebrew: "עוֹף", spanish: "pájaro(s)", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/of.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson8-10/of.mp3" },
+                { hebrew: "לָנוּ", spanish: "a nosotros, para nosotros", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/lanu.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson8-10/lanu.mp3" },
+                { hebrew: "נָתְנָה", spanish: "ella dio, puso", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/natnah.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson8-10/natnah.mp3" },
+                { hebrew: "נָתְנוּ", spanish: "ellos dieron, pusieron", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/natnu.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson8-10/natnu.mp3" },
+                { hebrew: "יָם", spanish: "mar", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/yam.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson8-10/yam.mp3" },
+                { hebrew: "הָלְכָה", spanish: "ella caminó, fue", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/halchah.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson8-10/halchah.mp3" },
+                { hebrew: "הָלְכוּ", spanish: "ellos caminaron, fueron", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/halchu.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson8-10/halchu.mp3" }
+            ],
+            lesson9: [
+                { hebrew: "לָקַח", spanish: "él tomó, llevó", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/laqach.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson8-10/laqach.mp3" },
+                { hebrew: "חֹשֶׁךְ", spanish: "oscuridad, tinieblas", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/choshech.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson8-10/choshech.mp3" },
+                { hebrew: "אֱלֹהִים", spanish: "dioses, Dios", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/elohim.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson8-10/elohim.mp3" },
+                { hebrew: "אֲדָמָה", spanish: "tierra, suelo (f.)", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/adamah.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson8-10/adamah.mp3" },
+                { hebrew: "עָפָר", spanish: "polvo", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/afar.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson8-10/afar.mp3" },
+                { hebrew: "אוֹר", spanish: "luz", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/or.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson8-10/or.mp3" },
+                { hebrew: "רוּחַ", spanish: "espíritu, viento (f.)", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/ruach.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson8-10/ruach.mp3" },
+                { hebrew: "חַג", spanish: "fiesta", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/chag.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson8-10/chag.mp3" },
+                { hebrew: "אֲשֶׁר", spanish: "quien, que (relativo)", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/asher.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson8-10/asher.mp3" }
+            ],
+            lesson10: [
+                { hebrew: "אֶרֶץ", spanish: "tierra, terreno (f.)", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/erets.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson8-10/erets.mp3" },
+                { hebrew: "הָאָרֶץ", spanish: "la tierra", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/ha-arets.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson8-10/ha-arets.mp3" },
+                { hebrew: "אֶת-/אֵת", spanish: "(signo del objeto directo definido)", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/et-eit.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson8-10/et-eit.mp3" },
+                { hebrew: "שָׁלוֹם", spanish: "paz", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/shalom.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson8-10/shalom.mp3" },
+                { hebrew: "יְהוָה", spanish: "Jehová (Ketiv)", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/yhwh.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson8-10/yhwh.mp3" },
+                { hebrew: "אֲדֹנָי", spanish: "el Señor (Qeré)", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/adonai.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson8-10/adonai.mp3" },
+                { hebrew: "אֱלֹהֵינוּ", spanish: "nuestro Dios", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/eloheinu.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson8-10/eloheinu.mp3" },
+                { hebrew: "אֶחָד", spanish: "uno", image: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/Vocabimages/ehad.png", audio: "https://pub-52c9a91481ce452b90d09e9e76c6aacc.r2.dev/audiolesson8-10/ehad.mp3" }
+            ]
+        };
+
+        // Global variables
+        let currentWords = [];
+        let currentIndex = 0;
+        let isFlipped = false;
+        let progress = {};
+
+        // Load progress from localStorage
+        function loadProgress() {
+            try {
+                const saved = localStorage.getItem('hebrewProgress');
+                progress = saved ? JSON.parse(saved) : {};
+            } catch (e) {
+                progress = {};
+            }
+        }
+
+        // Save progress to localStorage
+        function saveProgress() {
+            try {
+                localStorage.setItem('hebrewProgress', JSON.stringify(progress));
+            } catch (e) {
+                console.log('Error saving progress');
+            }
+        }
+
+        // Toggle progress details
+        function toggleProgress() {
+            const details = document.getElementById('progressDetails');
+            const icon = document.getElementById('toggleIcon');
+            
+            if (details.classList.contains('collapsed')) {
+                details.classList.remove('collapsed');
+                icon.textContent = '▼';
+                icon.classList.remove('collapsed');
+            } else {
+                details.classList.add('collapsed');
+                icon.textContent = '▶';
+                icon.classList.add('collapsed');
+            }
+        }
+
+        // Update progress display
+        function updateProgressDisplay() {
+            const allWords = [
+                ...vocabulary.lesson3, 
+                ...vocabulary.lesson4, 
+                ...vocabulary.lesson5, 
+                ...vocabulary.lesson6, 
+                ...vocabulary.lesson7,
+                ...vocabulary.lesson8,
+                ...vocabulary.lesson9,
+                ...vocabulary.lesson10
+            ];
+            
+            let totalStudied = 0;
+            let easyCount = 0;
+            let mediumCount = 0;
+            let hardCount = 0;
+            
+            allWords.forEach(word => {
+                const wordProgress = progress[word.hebrew];
+                if (wordProgress && wordProgress.difficulty) {
+                    totalStudied++;
+                    if (wordProgress.difficulty === 'easy') easyCount++;
+                    else if (wordProgress.difficulty === 'medium') mediumCount++;
+                    else if (wordProgress.difficulty === 'hard') hardCount++;
+                }
+            });
+            
+            document.getElementById('totalStudied').textContent = totalStudied;
+            document.getElementById('easyCount').textContent = easyCount;
+            document.getElementById('mediumCount').textContent = mediumCount;
+            document.getElementById('hardCount').textContent = hardCount;
+        }
+
+        // Update lesson selection display
+        function updateSelection() {
+            const checkboxes = ['lesson3', 'lesson4', 'lesson5', 'lesson6', 'lesson7', 'lesson8', 'lesson9', 'lesson10'];
+            const reviewMode = document.getElementById('reviewMode').checked;
+            const startButton = document.getElementById('startButton');
+            
+            if (reviewMode) {
+                checkboxes.forEach(id => document.getElementById(id).disabled = true);
+                startButton.disabled = false;
+                document.getElementById('lessonDisplay').textContent = 'Modo Repaso';
+            } else {
+                checkboxes.forEach(id => document.getElementById(id).disabled = false);
+                const anySelected = checkboxes.some(id => document.getElementById(id).checked);
+                startButton.disabled = !anySelected;
+                
+                const selectedLessons = checkboxes
+                    .filter(id => document.getElementById(id).checked)
+                    .map(id => id.replace('lesson', ''));
+                
+                if (selectedLessons.length === 1) {
+                    document.getElementById('lessonDisplay').textContent = `Lección ${selectedLessons[0]}`;
+                } else if (selectedLessons.length > 1) {
+                    document.getElementById('lessonDisplay').textContent = `Lecciones ${selectedLessons.join(', ')}`;
+                } else {
+                    document.getElementById('lessonDisplay').textContent = 'Ninguna lección seleccionada';
+                }
+            }
+        }
+
+        // Shuffle array
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        // Start study session
+        function startStudy() {
+            currentWords = [];
+            const reviewMode = document.getElementById('reviewMode').checked;
+            
+            if (reviewMode) {
+                const allWords = [
+                    ...vocabulary.lesson3, 
+                    ...vocabulary.lesson4, 
+                    ...vocabulary.lesson5, 
+                    ...vocabulary.lesson6, 
+                    ...vocabulary.lesson7,
+                    ...vocabulary.lesson8,
+                    ...vocabulary.lesson9,
+                    ...vocabulary.lesson10
+                ];
+                
+                allWords.forEach(word => {
+                    const wordProgress = progress[word.hebrew];
+                    if (wordProgress && (wordProgress.difficulty === 'medium' || wordProgress.difficulty === 'hard')) {
+                        currentWords.push(word);
+                    }
+                });
+                
+                if (currentWords.length === 0) {
+                    alert('No hay palabras para repasar. Estudia algunas lecciones primero.');
+                    return;
+                }
+            } else {
+                const lessonMappings = {
+                    'lesson3': vocabulary.lesson3,
+                    'lesson4': vocabulary.lesson4,
+                    'lesson5': vocabulary.lesson5,
+                    'lesson6': vocabulary.lesson6,
+                    'lesson7': vocabulary.lesson7,
+                    'lesson8': vocabulary.lesson8,
+                    'lesson9': vocabulary.lesson9,
+                    'lesson10': vocabulary.lesson10
+                };
+                
+                Object.entries(lessonMappings).forEach(([lessonId, lessonWords]) => {
+                    if (document.getElementById(lessonId).checked) {
+                        currentWords.push(...lessonWords);
+                    }
+                });
+                
+                if (currentWords.length === 0) {
+                    alert('Selecciona al menos una lección para estudiar.');
+                    return;
+                }
+            }
+
+            if (document.getElementById('mixCards').checked) {
+                currentWords = shuffleArray(currentWords);
+            }
+
+            currentIndex = 0;
+            isFlipped = false;
+            
+            document.getElementById('lessonSelector').style.display = 'none';
+            document.getElementById('progressSummary').style.display = 'none';
+            document.getElementById('studyArea').classList.add('show');
+            
+            updateCard();
+        }
+
+        // Go back to lesson selector
+        function backToLessonSelector() {
+            document.getElementById('studyArea').classList.remove('show');
+            document.getElementById('lessonSelector').style.display = 'block';
+            document.getElementById('progressSummary').style.display = 'block';
+            
+            if (isFlipped) {
+                document.getElementById('flashcard').classList.remove('flipped');
+                isFlipped = false;
+            }
+        }
+
+        // Flip flashcard
+        function flipCard() {
+            const flashcard = document.getElementById('flashcard');
+            flashcard.classList.toggle('flipped');
+            isFlipped = !isFlipped;
+        }
+
+        // Navigate to previous card
+        function goToPrevious() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateCard();
+            }
+        }
+
+        // Navigate to next card
+        function goToNext() {
+            if (currentIndex < currentWords.length - 1) {
+                currentIndex++;
+                updateCard();
+            }
+        }
+
+        // Rate word difficulty
+        function rateDifficulty(difficulty) {
+            const word = currentWords[currentIndex];
+            if (!progress[word.hebrew]) {
+                progress[word.hebrew] = {};
+            }
+            
+            progress[word.hebrew].difficulty = difficulty;
+            progress[word.hebrew].date = new Date().toISOString();
+            
+            saveProgress();
+            updateProgressDisplay();
+            updateDifficultyDisplay();
+            updateStats();
+            
+            setTimeout(() => {
+                if (isFlipped) {
+                    flipCard();
+                }
+            }, 500);
+        }
+
+        // Play audio
+        async function playAudio(event) {
+            if (event) event.stopPropagation();
+            
+            const word = currentWords[currentIndex];
+            if (!word) return;
+            
+            try {
+                if (word.audio) {
+                    const audio = new Audio(word.audio);
+                    await audio.play();
+                } else {
+                    await playTTS(word.hebrew);
+                }
+            } catch (error) {
+                await playTTS(word.hebrew);
+            }
+        }
+
+        // Text-to-speech fallback
+        async function playTTS(text) {
+            if (!window.speechSynthesis) return;
+            
+            window.speechSynthesis.cancel();
+            
+            return new Promise((resolve) => {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'he-IL';
+                utterance.rate = 0.7;
+                utterance.onend = resolve;
+                utterance.onerror = resolve;
+                window.speechSynthesis.speak(utterance);
+            });
+        }
+
+        // Load image with fallback
+        function loadImage(imgElement, placeholderElement, src) {
+            if (!src) {
+                imgElement.style.display = 'none';
+                placeholderElement.style.display = 'flex';
+                placeholderElement.textContent = 'Sin imagen';
+                return;
+            }
+
+            imgElement.onload = function() {
+                imgElement.style.display = 'block';
+                placeholderElement.style.display = 'none';
+            };
+
+            imgElement.onerror = function() {
+                imgElement.style.display = 'none';
+                placeholderElement.style.display = 'flex';
+                placeholderElement.textContent = 'Error cargando imagen';
+            };
+
+            imgElement.src = src;
+        }
+
+        // Update current card display
+        function updateCard() {
+            if (!currentWords.length || currentIndex >= currentWords.length) return;
+            
+            const word = currentWords[currentIndex];
+            
+            document.getElementById('hebrewText').textContent = word.hebrew;
+            document.getElementById('spanishText').textContent = word.spanish;
+            
+            loadImage(
+                document.getElementById('frontImage'), 
+                document.getElementById('frontPlaceholder'), 
+                word.image
+            );
+            loadImage(
+                document.getElementById('backImage'), 
+                document.getElementById('backPlaceholder'), 
+                word.image
+            );
+            
+            document.getElementById('progressDisplay').textContent = `${currentIndex + 1} / ${currentWords.length}`;
+            document.getElementById('prevButton').disabled = currentIndex === 0;
+            document.getElementById('nextButton').disabled = currentIndex === currentWords.length - 1;
+            
+            if (isFlipped) {
+                document.getElementById('flashcard').classList.remove('flipped');
+                isFlipped = false;
+            }
+            
+            updateDifficultyDisplay();
+            updateStats();
+        }
+
+        // Update difficulty indicator and buttons
+        function updateDifficultyDisplay() {
+            if (!currentWords.length) return;
+            
+            const word = currentWords[currentIndex];
+            const wordProgress = progress[word.hebrew];
+            const indicator = document.getElementById('difficultyIndicator');
+            
+            if (wordProgress && wordProgress.difficulty) {
+                indicator.className = `difficulty-indicator ${wordProgress.difficulty} show`;
+            } else {
+                indicator.className = 'difficulty-indicator';
+            }
+
+            const buttons = document.querySelectorAll('.difficulty-btn');
+            buttons.forEach(button => {
+                button.classList.remove('selected');
+                const buttonDifficulty = button.getAttribute('data-difficulty');
+                if (wordProgress && wordProgress.difficulty === buttonDifficulty) {
+                    button.classList.add('selected');
+                }
+            });
+        }
+
+        // Update statistics display
+        function updateStats() {
+            if (!currentWords.length) return;
+            
+            let studied = 0;
+            let mediumCount = 0;
+            let hardCount = 0;
+            
+            currentWords.forEach(word => {
+                const wordProgress = progress[word.hebrew];
+                if (wordProgress && wordProgress.difficulty) {
+                    studied++;
+                    if (wordProgress.difficulty === 'medium') mediumCount++;
+                    if (wordProgress.difficulty === 'hard') hardCount++;
+                }
+            });
+            
+            document.getElementById('studiedCount').textContent = studied;
+            document.getElementById('totalCount').textContent = currentWords.length;
+            
+            const reviewMode = document.getElementById('reviewMode').checked;
+            const reviewStats = document.getElementById('reviewStats');
+            
+            if (reviewMode) {
+                document.getElementById('reviewMediumCount').textContent = mediumCount;
+                document.getElementById('reviewHardCount').textContent = hardCount;
+                reviewStats.style.display = 'block';
+            } else {
+                reviewStats.style.display = 'none';
+            }
+        }
+
+        // Initialize app
+        function initializeApp() {
+            loadProgress();
+            updateProgressDisplay();
+            updateSelection();
+
+            // Event listeners for checkboxes
+            ['lesson3', 'lesson4', 'lesson5', 'lesson6', 'lesson7', 'lesson8', 'lesson9', 'lesson10', 'reviewMode'].forEach(id => {
+                document.getElementById(id).addEventListener('change', updateSelection);
+            });
+
+            // Event listeners for buttons
+            document.getElementById('startButton').addEventListener('click', startStudy);
+            document.getElementById('backButton').addEventListener('click', backToLessonSelector);
+            document.getElementById('prevButton').addEventListener('click', goToPrevious);
+            document.getElementById('nextButton').addEventListener('click', goToNext);
+            document.getElementById('flashcard').addEventListener('click', flipCard);
+            document.getElementById('audioButton').addEventListener('click', playAudio);
+
+            // Event listeners for difficulty buttons
+            document.querySelectorAll('.difficulty-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const difficulty = this.getAttribute('data-difficulty');
+                    rateDifficulty(difficulty);
+                });
+            });
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                if (!document.getElementById('studyArea').classList.contains('show')) return;
+                
+                switch(e.code) {
+                    case 'Space':
+                        e.preventDefault();
+                        flipCard();
+                        break;
+                    case 'ArrowLeft':
+                        e.preventDefault();
+                        goToPrevious();
+                        break;
+                    case 'ArrowRight':
+                        e.preventDefault();
+                        goToNext();
+                        break;
+                    case 'KeyA':
+                        e.preventDefault();
+                        playAudio();
+                        break;
+                    case 'Digit1':
+                        if (isFlipped) rateDifficulty('easy');
+                        break;
+                    case 'Digit2':
+                        if (isFlipped) rateDifficulty('medium');
+                        break;
+                    case 'Digit3':
+                        if (isFlipped) rateDifficulty('hard');
+                        break;
+                }
+            });
+        }
+
+        // Start the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
+</body>
+</html>
